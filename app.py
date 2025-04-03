@@ -33,13 +33,15 @@ def descargar_y_cargar_datos():
     worksheet2 = sh.worksheet("ACTRI")   # Hoja para ACTRI
     worksheet3 = sh.worksheet("PTCI")    # Hoja para PTCI
     worksheet4 = sh.worksheet("AMTRI")   # Hoja para AMTRI
+    worksheet5 = sh.worksheet("NOMBRES")   # Hoja para AMTRI
 
     # Obtén todos los registros y conviértelos a DataFrames
     return {
         "PTAR": pd.DataFrame(worksheet1.get_all_records()),
         "ACTRI": pd.DataFrame(worksheet2.get_all_records()),
         "PTCI": pd.DataFrame(worksheet3.get_all_records()),
-        "AMTRI": pd.DataFrame(worksheet4.get_all_records())
+        "AMTRI": pd.DataFrame(worksheet4.get_all_records()),
+        "NOMBRES": pd.DataFrame(worksheet5.get_all_records())
     }
 
 #============================================ FUNCIÓN PARA LIMPIEZA DE DATOS ============================================================
@@ -68,6 +70,7 @@ try:
     df2 = datos_limpios["ACTRI"]
     df3 = datos_limpios["PTCI"]
     df4 = datos_limpios["AMTRI"]
+    df5 = datos_limpios["NOMBRES"]
 
 except Exception as e:
     st.error(f"Error crítico: {str(e)}")
@@ -1031,53 +1034,122 @@ with tabs[2]:
     def style_row_dup(row):
         return ['background-color: #f9d2d2; color: red'] * len(row)
 
+
+
     ##########################################
     # BLOQUE 0: Comparación de nombres institucionales (SICOIN vs PEF 2025)
     ##########################################
 
     st.markdown('<p class="section-title">📋 Comparación de Nombres Institucionales (SICOIN vs PEF 2025)</p>', unsafe_allow_html=True)
     st.markdown("""
-    La siguiente tabla muestra los nombres de las instituciones registradas en el Sistema SICOIN junto con el nombre correcto de la institución y del sector según el PEF 2025.
-    En la columna “¿Coincide el Nombre de la Institución?” se utiliza
-    ✅ para indicar que el nombre es correcto y ❌ para indicar que no coincide (lo que requiere actualización).
+    ✅ Indica que el nombre coincide con el PEF 2025.
+    
+    ❌ Indica que no coincide (lo que requiere actualización).
       """)
 
-    # --- Datos de ejemplo para la tabla – reemplazar con los datos reales ---
+
+# Procesar y renombrar la lista de instituciones (df5) a nombres amigables
+    df_instituciones = df5.copy()
+
+    df_instituciones.rename(columns={
+        "NOMBRE_SICOIN": "Nombre de las Instituciones en el Sistema SICOIN",
+        "SECTOR_SICOIN": "Nombre de los Sectores en el Sistema SICOIN",
+        "SECTOR_PEF": "Sector Según el PEF 2025",
+        "NOMBRE_PEF": "Nombre de la Institución Según el PEF 2025",
+        "COINCIDE": "¿Coincide el Nombre de la Institución?"
+    }, inplace=True)
+
+    # Función para aplicar estilo a las filas según la coincidencia
+    def style_row_instituciones(row):
+        if row["¿Coincide el Nombre de la Institución?"] == "✅":
+            # Fondo verde para coincidencia
+            return ['background-color: #c8e6c9'] * len(row)
+        elif row["¿Coincide el Nombre de la Institución?"] == "❌":
+            # Fondo rojo para discrepancia
+            return ['background-color: #ffcdd2'] * len(row)
+        else:
+            return [''] * len(row)
+
+    # Expander para mostrar las discrepancias
+    with st.expander("Ver Discrepancias Encontradas"):
+        st.dataframe(df_instituciones.style.apply(style_row_instituciones, axis=1),
+                    use_container_width=True)
+
+
+
+    # Función de estilo condicional para pintar los registros basura de rojo
+    def style_row_instituciones_basura(row):
+        # Solo pintar si el valor de '¿Coincide el Nombre de la Institución?' es "❌"
+        if row['¿Coincide el Nombre de la Institución?'] == "❌":
+            return ['background-color: red' for _ in row]  # Pinta toda la fila de rojo
+        else:
+            return [''] * len(row)  # Sin estilo si no es "❌"
+
+    # Datos de ejemplo de instituciones (como en tu código)
     instituciones_data = [
         {
-            "Nombre de las Instituciones en el Sistema SICOIN": "ADMINISTRACIÓN DEL PATRIMONIO DE LA BENEFICENCIA PÚBLICA",
-            "Nombre de los Sectores en el Sistema SICOIN": "12_SSA",
-            "Nombre Correcto del Sector Según el PEF 2025": "12 Salud",
-            "Nombre Correcto de la Institución Según el PEF 2025": "Administración del Patrimonio de la Beneficencia Pública",
+            "Nombre de las Instituciones en el Sistema SICOIN": "Institución de Prueba (Se encuentra en PTCI)",
+            "Nombre de los Sectores en el Sistema SICOIN": "",
+            "Nombre Correcto del Sector Según el PEF 2025": "El registro es de Prueba por lo Tanto Eliminar",
+            "Nombre Correcto de la Institución Según el PEF 2025": "El registro es de Prueba por lo Tanto Eliminar",
             "¿Coincide el Nombre de la Institución?": "❌"
         },
         {
-            "Nombre de las Instituciones en el Sistema SICOIN": "Agencia Federal de Aviación Civil",
-            "Nombre de los Sectores en el Sistema SICOIN": "09_SCT",
-            "Nombre Correcto del Sector Según el PEF 2025": "09 Infraestructura, Comunicaciones y Transportes",
-            "Nombre Correcto de la Institución Según el PEF 2025": "Agencia Federal de Aviación Civil",
-            "¿Coincide el Nombre de la Institución?": "✅"
-        },
-        # ... Agregar el resto de los registros según corresponda ...
-        {
-            "Nombre de las Instituciones en el Sistema SICOIN": "Institución de Prueba",
+            "Nombre de las Instituciones en el Sistema SICOIN": "Instituto de Tamaulipas Demo (Se encuentra en el PTAR)",
             "Nombre de los Sectores en el Sistema SICOIN": "",
-            "Nombre Correcto del Sector Según el PEF 2025": "Eliminar Este Registro",
-            "Nombre Correcto de la Institución Según el PEF 2025": "Eliminar Este Registro",
-            "¿Coincide el Nombre de la Institución?": "❌"
-        },
-        {
-            "Nombre de las Instituciones en el Sistema SICOIN": "Instituto de Tamaulipas Demo",
-            "Nombre de los Sectores en el Sistema SICOIN": "",
-            "Nombre Correcto del Sector Según el PEF 2025": "Eliminar Este Registro",
-            "Nombre Correcto de la Institución Según el PEF 2025": "Eliminar Este Registro",
+            "Nombre Correcto del Sector Según el PEF 2025": "El registro es de Prueba por lo Tanto Eliminar",
+            "Nombre Correcto de la Institución Según el PEF 2025": "El registro es de Prueba por lo Tanto Eliminar",
             "¿Coincide el Nombre de la Institución?": "❌"
         },
     ]
-    df_instituciones = pd.DataFrame(instituciones_data)
 
-    with st.expander("Ver Discrepancias Encontradas"):
-        st.dataframe(df_instituciones.style.apply(style_row_instituciones, axis=1), use_container_width=True)
+    # Crear el DataFrame de las instituciones
+    df_instituciones_basura = pd.DataFrame(instituciones_data)
+
+    # Mostrar el título para los registros basura
+    st.markdown('<p class="section-title">📋 Registros Basura</p>', unsafe_allow_html=True)
+
+    # Expander para mostrar los registros basura
+    with st.expander("Ver Registros Basura"):
+        st.dataframe(df_instituciones_basura.style.apply(style_row_instituciones_basura, axis=1), use_container_width=True)
+
+
+    # --------------------------------------------------------------------------------
+    # Tabla para las modificaciones necesarias a las Bases del SICOIN
+
+    # Función de estilo condicional para la tabla de modificaciones:
+    # - Si "¿Requiere modificación?" es "✅" se pinta de verde (columnas suficientes)
+    # - Si es "❌" se pinta de rojo (requiere modificación)
+    def style_modificaciones(row):
+        if row['¿Contiene Datos Suficientes?'] == "✅":
+            return ['background-color: lightgreen' for _ in row]
+        else:
+            return ['background-color: red' for _ in row]
+
+    # Datos de ejemplo para las modificaciones, usando palomita y tache
+    data_modificaciones = [
+        {"Base SICOIN": "PTCI",         "¿Contiene Datos Suficientes?": "✅", "Modificación a realizar": ""},
+        {"Base SICOIN": "PTAR",         "¿Contiene Datos Suficientes?": "✅", "Modificación a realizar": ""},
+        {"Base SICOIN": "ACTrimestral", "¿Contiene Datos Suficientes?": "❌", "Modificación a realizar": 'Añadir Columna "Detalle del Riesgo"'},
+        {"Base SICOIN": "AMTrimestral", "¿Contiene Datos Suficientes?": "❌", "Modificación a realizar": 'Añadir Columna "Sector"'}
+    ]
+
+    # Crear el DataFrame para las modificaciones
+    df_modificaciones = pd.DataFrame(data_modificaciones)
+
+    # Mostrar el título y la leyenda
+    st.markdown('<p class="section-title">📋 Modificaciones Necesarias a las Bases del SICOIN</p>', unsafe_allow_html=True)
+    st.markdown("""
+    ✅ Indica que las columnas son suficientes para elaborar reportes estadísticos.
+
+    ❌ Indica que requiere de modificaciones.
+    """)
+
+
+    # Expander para mostrar la tabla de modificaciones
+    with st.expander("Ver Modificaciones"):
+        st.dataframe(df_modificaciones.style.apply(style_modificaciones, axis=1), use_container_width=True)
+
 
 
     ##########################################
@@ -1085,10 +1157,11 @@ with tabs[2]:
     ##########################################
     st.markdown('<p class="section-title">📝 Verificación de Acciones de Control (PTAR vs ACTRI)</p>', unsafe_allow_html=True)
     st.markdown("""
-    En esta sección se compara el total de acciones de control reportadas en el PTAR con el total (y el total sin duplicados) reportado en el SISTEMA ACTRI.
-    Se marca con ✅ cuando el número de acciones sin duplicados coincide con el total del PTAR y con ❌ cuando existe una discrepancia.
-
-    **HELP:** Los registros con fondo verde indican conformidad en los datos, mientras que los rojos evidencian discrepancias o duplicados que deben ser revisados.
+    En esta sección se verifica que el total de acciones de control reportadas en el PTAR coincida con las registradas en el SISTEMA (Sin considerar Acciones Duplicadas).
+    
+    ✅ Indica que el número de acciones registradas (Sin duplicados) coincide con el total del PTAR
+    
+    ❌ Indica que existe una discrepancia.
     """)
 
     # Normalización de nombres para agrupación (se utiliza df1 y df2)
@@ -1191,6 +1264,7 @@ with tabs[2]:
             st.success("✅ Todas las acciones coinciden después de eliminar duplicados")
 
 
+
     ##########################################
     # BLOQUE 2: Verificación de Acciones de Mejora (PTCI vs AMTRI - Trimestre 4)
     ##########################################
@@ -1199,7 +1273,13 @@ with tabs[2]:
     En este bloque se comparan las acciones de mejora reportadas en el PTCI con las registradas en el SISTEMA AMTRI para el Trimestre 4.
     Se calcula la diferencia entre ambos valores; una diferencia de 0 (fondo verde) indica conformidad, mientras que cualquier diferencia (fondo rojo) señala una discrepancia.
 
-    **HELP:** Utiliza esta tabla para identificar rápidamente en qué instituciones se requiere una revisión de los datos de acciones de mejora.
+    En esta sección se verifica que el total de acciones de mejora reportadas en el PTCI coincida con las registradas en el SISTEMA el último trimestre reportado (Sin considerar Acciones Duplicadas).
+    
+    ✅ Indica que el número de acciones registradas (Sin duplicados) coincide con el total del PTCI
+    
+    ❌ Indica que existe una discrepancia.
+
+
     """)
 
     # Normalización de nombres
@@ -1248,17 +1328,6 @@ with tabs[2]:
         else:
             st.success("✅ No se encontraron discrepancias en las acciones de mejora.")
 
-    ##########################################
-    # Leyenda General
-    ##########################################
-    st.markdown("""
-    ---
-    **Leyenda General:**
-    ✅ - El valor está presente y coincide según la verificación.
-    ❌ - El valor no está presente o no coincide.
-
-    *En los bloques de acciones se muestran únicamente los registros con discrepancias o casos especiales a revisar.*
-    """, unsafe_allow_html=True)
 
     ##########################################
     # Resumen Final de los Análisis
@@ -1270,9 +1339,6 @@ with tabs[2]:
     - **Cantidad de Registros de Prueba que aparecen en las bases de datos (eliminar estos registros):** 2
       - Institución de Prueba
       - Instituto de Tamaulipas Demo
-    - **Cantidad de Registros Duplicados identificados en ACTRI:** 18
-    - **Cantidad de Instituciones con diferencias en acciones de control:** 12
-    - **Cantidad de Instituciones con diferencias en acciones de mejora (Trimestre 4):** 7
 
     *Nota: Los valores numéricos anteriores son los resultados obtenidos de la consolidación real de las bases de datos.*
     """, unsafe_allow_html=True)
