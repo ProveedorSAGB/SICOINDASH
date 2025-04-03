@@ -17,11 +17,13 @@ st.set_page_config(page_title="Sistema Control Interno", layout="wide", page_ico
 ###########################################################
 ###########################################################
 
+
+
 #==================================== CARGA DE DATOS DESDE GOOGLE SHEETS CON CACHEO ============================================
 @st.cache_resource(ttl="1h", show_spinner="Descargando datos actualizados desde Sheets...")
 def descargar_y_cargar_datos():
     # Conecta usando las credenciales de la sección correspondiente
-    gc = gspread.service_account_from_dict(creds['gcp_service_account'])
+    gc = gspread.service_account_from_dict(st.secrets['gcp_service_account'])
 
     # Abre el libro de Sheets llamado "SICOIN_BASE"
     sh = gc.open("SICOIN_BASE")
