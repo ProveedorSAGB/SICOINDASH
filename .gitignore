@@ -1,0 +1,12 @@
+# Archivos sensibles
+.streamlit/secrets.toml
+*.json  # 👈 Nueva línea importante (excluye todos tus archivos de credenciales JSON)
+
+# Entornos y cachés
+__pycache__/
+venv/
+.env
+*.env  # 👈 Más completo que solo .env
+
+# Archivos generados
+*.pyc

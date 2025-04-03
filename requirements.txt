@@ -1,0 +1,8 @@
+streamlit
+pandas
+altair
+gspread
+numpy
+matplotlib
+plotly
+gdown
