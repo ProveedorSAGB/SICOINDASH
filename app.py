@@ -992,7 +992,7 @@ with tabs[1]:
 
 with tabs[2]:
 
-    st.markdown("<h2>📋 CONSOLIDACIÓN DE LAS BASES DE DATOS SICOIN 📋</h2><p>Información Actualizada al 13/06/2025.</p>", unsafe_allow_html=True)
+    st.markdown("<h2>📋 CONSOLIDACIÓN DE LAS BASES DE DATOS SICOIN 📋</h2><p>Información Actualizada al 13/06/2025 04:30 PM.</p>", unsafe_allow_html=True)
 
     import unicodedata
     import pandas as pd
