@@ -992,7 +992,7 @@ with tabs[1]:
 
 with tabs[2]:
 
-    st.markdown("<h2>📋 CONSOLIDACIÓN DE LAS BASES DE DATOS SICOIN 📋</h2><p>Información Actualizada al 02/04/2025.</p>", unsafe_allow_html=True)
+    st.markdown("<h2>📋 CONSOLIDACIÓN DE LAS BASES DE DATOS SICOIN 📋</h2><p>Información Actualizada al 13/06/2025.</p>", unsafe_allow_html=True)
 
     import unicodedata
     import pandas as pd
@@ -1335,7 +1335,6 @@ with tabs[2]:
     st.markdown("""
     ---
     ### Resumen General de Análisis
-    - **Cantidad de Instituciones con nombre y sector sin conformidad con el PEF 2025:** 253
     - **Cantidad de Registros de Prueba que aparecen en las bases de datos (eliminar estos registros):** 2
       - Institución de Prueba
       - Instituto de Tamaulipas Demo
